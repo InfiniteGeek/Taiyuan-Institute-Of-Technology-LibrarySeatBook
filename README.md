@@ -6,7 +6,7 @@
 
 2.输入学号、楼层自习室、座位号，保存信息
 
-<img src="D:/Desktop/PixPin_2024-11-06_23-35-47.png" alt="PixPin_2024-11-06_23-35-47" style="zoom: 80%;" />
+![PixPin_2024-11-06_23-35-47](D:/Desktop/PixPin_2024-11-06_23-35-47.png)
 
 3.加入windows的“任务计划程序”
 
