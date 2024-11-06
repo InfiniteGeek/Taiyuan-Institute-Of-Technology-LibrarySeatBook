@@ -1,2 +1,10 @@
-# TaiyuanInstituteOfTechnology-LibrarySeatBook
- 太原工业学院预约图书馆座位软件
+# Taiyuan-Institute-Of-Technology-LibrarySeatBook(太原工业学院预约图书馆座位软件)
+
+ 使用方法：
+
+1.下载安装
+
+2.输入学号、楼层自习室、座位号，保存信息
+
+3.加入windows的“任务计划程序”
+
