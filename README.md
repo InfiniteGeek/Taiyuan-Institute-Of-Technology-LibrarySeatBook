@@ -6,7 +6,7 @@
 
 2.输入学号、楼层自习室、座位号，保存信息
 
-![image-20241106233220090](C:/Users/Infinite Geek/AppData/Roaming/Typora/typora-user-images/image-20241106233220090.png)
+![image-20241106233416649](C:/Users/Infinite Geek/AppData/Roaming/Typora/typora-user-images/image-20241106233416649.png)
 
 3.加入windows的“任务计划程序”
 
