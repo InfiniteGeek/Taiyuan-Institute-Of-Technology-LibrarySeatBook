@@ -36,8 +36,12 @@ public class library {
         if (isConfigIncomplete()) {
             CreateConfig();//加载或创建配置文件
         }
-        else if(now.equals(Begin) || now.isAfter(Begin)) {
-            TestSystemDelay();
+        else if(ConfigComplete()){
+            JOptionPane.showMessageDialog(null, "配置文件内容不完整，请补充！", "配置缺失", JOptionPane.ERROR_MESSAGE);
+            CreateConfig();//加载或创建配置文件
+        }
+        else if((now.equals(Begin) || now.isAfter(Begin))&&TestSystemDelay()) {
+
             Runnable task = createTask();
             task.run();
             System.exit(0);
@@ -111,7 +115,7 @@ public class library {
 
 
     //测试预约系统的开放时间
-    private static void TestSystemDelay(){
+    private static boolean TestSystemDelay(){
             String urlString = "https://mipservice.tit.edu.cn/consumeServer/ReadingRoomWx/getReadyForOneSchLabApply";
             try {
                 URL url = new URL(urlString);
@@ -172,15 +176,14 @@ public class library {
                         continueLoop = false;
                     }
                     }
+                 return true;
                     }
                 }
-
-
             } catch (Exception e) {
-                e.printStackTrace();
+                return false;
             }
-
-        }
+        return false;
+    }
 
 
 
@@ -291,7 +294,20 @@ public class library {
         roomSeatRanges.put("六层-多媒体阅览室", new Integer[]{1, 212});
         roomSeatRanges.put("六层-电子阅览室", new Integer[]{1, 288});
     }
-
+    private static final Map<String, Integer[]> roomSeatRange = new HashMap<>();
+    static {
+        roomSeatRange.put("二层-报刊阅览室", new Integer[]{1, 307});
+        roomSeatRange.put("三层-中文阅览室一", new Integer[]{1, 307});
+        roomSeatRange.put("三层-中文阅览室二", new Integer[]{1, 307});
+        roomSeatRange.put("三层-休闲区", new Integer[]{1, 56});
+        roomSeatRange.put("四层-中文阅览室三", new Integer[]{1, 288});
+        roomSeatRange.put("四层-中文阅览室四", new Integer[]{1, 288});
+        roomSeatRange.put("五层-外文阅览室", new Integer[]{1,416});
+        roomSeatRange.put("五层-多功能阅览室", new Integer[]{1,216});
+        roomSeatRange.put("五层-综合阅览室", new Integer[]{1, 416});
+        roomSeatRange.put("六层-多媒体阅览室", new Integer[]{1, 212});
+        roomSeatRange.put("六层-电子阅览室", new Integer[]{1, 288});
+    }
     //创建配置文件的UI面板
     private static void CreateConfig() {
         JFrame frame = new JFrame("座位预约");//设置窗口的title
@@ -309,7 +325,7 @@ public class library {
         JLabel labelCardNumber = new JLabel("学  号:");
         labelCardNumber.setFont(new Font("宋体", Font.BOLD, 13));
         JTextField textFieldCardNumber = new JTextField(13);
-        textFieldCardNumber.setPreferredSize(new Dimension(13, 24));
+        textFieldCardNumber.setPreferredSize(new Dimension(14, 25));
         textFieldCardNumber.setFont(new Font("宋体", Font.BOLD, 18));
 
         JLabel labelRoomName = new JLabel("自习室:");
@@ -322,7 +338,7 @@ public class library {
         JLabel labelSeatNum = new JLabel("座位号:");
         labelSeatNum.setFont(new Font("宋体", Font.BOLD, 13));
         JTextField textFieldSeatNum = new JTextField(13);
-        textFieldSeatNum.setPreferredSize(new Dimension(13, 24));
+        textFieldSeatNum.setPreferredSize(new Dimension(14, 25));
         textFieldSeatNum.setFont(new Font("宋体", Font.BOLD, 18));
 
 
@@ -337,10 +353,10 @@ public class library {
         JLabel labelSeatNum1 = new JLabel("备选号:");
         labelSeatNum1.setFont(new Font("宋体", Font.BOLD, 13));
         JTextField textFieldSeatNum1 = new JTextField(13);
-        textFieldSeatNum1.setPreferredSize(new Dimension(13, 24));
+        textFieldSeatNum1.setPreferredSize(new Dimension(14, 25));
         textFieldSeatNum1.setFont(new Font("宋体", Font.BOLD, 18));
 
-        JButton buttonSave = new JButton("保存");
+        JButton buttonSave = new JButton("保   存");
         buttonSave.setFont(new Font("微软雅黑", Font.BOLD, 13));
         buttonSave.setBackground(new Color(0, 122, 255));
         buttonSave.setForeground(Color.WHITE);
@@ -357,9 +373,10 @@ public class library {
                     public void actionPerformed(ActionEvent e) {
                         String cardNumber = textFieldCardNumber.getText().trim();
                         String roomName = (String) comboBoxRoomName.getSelectedItem();
+                        String roomName1 = (String) comboBoxRoomName1.getSelectedItem();
 
                         String labRoomId = getRoomId(roomName);
-                        String labRoomId1 = getRoomId1(roomName);
+                        String labRoomId1 = getRoomId1(roomName1);
 
                         String seatNumStr = textFieldSeatNum.getText().trim();
                         String seatNumStr1 = textFieldSeatNum1.getText().trim();
@@ -372,21 +389,28 @@ public class library {
                             JOptionPane.showMessageDialog(frame, "学号、座位号、备选座位号必须是数字！");
                             return;
                         }
+                        if(seatNumStr.equals(seatNumStr1) && labRoomId.equals(labRoomId1)) {
+                            JOptionPane.showMessageDialog(frame, "座位号和备选座位号不能相同！");
+                            return;
+                        }
 
                         try {
                             int seatNum = Integer.parseInt(seatNumStr);
                             int seatNum1 = Integer.parseInt(seatNumStr1);
-                            Integer[] range = roomSeatRanges.get(roomName);
 
-                            if((range == null || seatNum < range[0] || seatNum > range[1]) || (range == null || seatNum1 < range[0] || seatNum1 > range[1])){
-                                JOptionPane.showMessageDialog(frame, "座位号或备选座位号填写错误！该层座位号范围：" + range[0] + "-" + range[1]);
+                            Integer[] range = roomSeatRanges.get(roomName);
+                            Integer[] range1 = roomSeatRange.get(roomName1);
+
+                            if(seatNum < range[0] || seatNum > range[1]||seatNum1 < range1[0] || seatNum1 > range1[1]){
+                                if(roomName.equals(roomName1)){
+                                    JOptionPane.showMessageDialog(frame, "座位号或备选座位号填写错误！"+roomName+"的座位号范围：" + range[0] + "-" + range[1],"信息错误", JOptionPane.ERROR_MESSAGE);
+                                }else{
+                                    JOptionPane.showMessageDialog(frame, "座位号或备选座位号填写错误！"+"\n"+roomName+"的座位号范围：" + range[0] + "-" + range[1]+"\n"+roomName1+"的座位号范围：" + range1[0] + "-" + range1[1],"信息错误", JOptionPane.ERROR_MESSAGE);
+                                }
                                 return;
+
                             }
-                            if(seatNumStr.equals(seatNumStr1) && labRoomId.equals(labRoomId1))
-                            {
-                                JOptionPane.showMessageDialog(frame, "座位号和备选座位号不能相同！");
-                                return;
-                            }
+
                             // 保存配置
                             saveConfig(cardNumber, labRoomId, seatNum,labRoomId1,seatNum1);
                             JOptionPane.showMessageDialog(null, "保存配置成功！");
@@ -397,56 +421,7 @@ public class library {
 
                     }
                 });
-        buttonBook.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                String cardNumber = textFieldCardNumber.getText().trim();
-                String roomName = (String) comboBoxRoomName.getSelectedItem();
-                String labRoomId = getRoomId(roomName);
-                String labRoomId1 = getRoomId(roomName);
-                String seatNumStr = textFieldSeatNum.getText().trim();
-                String seatNumStr1 = textFieldSeatNum.getText().trim();
 
-                if (cardNumber.isEmpty() || seatNumStr.isEmpty()|| seatNumStr1.isEmpty()) {
-                    JOptionPane.showMessageDialog(frame, "学号、座位号、备选座位号不能为空！");
-                    return;
-                }
-                if(!isPositiveInteger(cardNumber)||!isPositiveInteger(seatNumStr)||!isPositiveInteger(seatNumStr1)){
-                    JOptionPane.showMessageDialog(frame, "学号、座位号、备选座位号必须是数字！且不得含有空格等特殊字符！");
-                    return;
-                }
-                try {
-                    int seatNum = Integer.parseInt(seatNumStr);
-                    int seatNum1 = Integer.parseInt(seatNumStr1);
-
-                    Integer[] range = roomSeatRanges.get(roomName);
-                    if((range == null || seatNum < range[0] || seatNum > range[1]) || (range == null || seatNum1 < range[0] || seatNum1 > range[1])){
-                        JOptionPane.showMessageDialog(frame, "座位号或备选座位号填写错误！该层座位号范围：" + range[0] + "-" + range[1]);
-                        return;
-                    }
-                    if(seatNumStr.equals(seatNumStr1) && labRoomId.equals(labRoomId1)) {
-                        JOptionPane.showMessageDialog(frame, "座位号和备选座位号不能相同！");
-                        return;
-                    }
-
-                    // 保存配置
-                    saveConfig(cardNumber, labRoomId, seatNum,labRoomId1,seatNum1);
-                    frame.dispose();
-
-                } catch (NumberFormatException ex) {
-                }
-                LocalTime now = LocalTime.now();
-                // 设置开始时间
-                LocalTime Begin = LocalTime.of(20, 29, 00);
-
-                if(now.isAfter(Begin) || now.equals(Begin)){
-                Runnable task = createTask();
-                task.run();
-                System.exit(0);}
-                else{
-                    JOptionPane.showMessageDialog(null,"该时段不是规定的预约时段！","预约出错", JOptionPane.ERROR_MESSAGE);
-                }
-     }
-        });
         panel.add(labelCardNumber);
 
         panel.add(Box.createHorizontalStrut(0));
@@ -501,8 +476,6 @@ public class library {
         panel.add(buttonSave);
         panel.add(Box.createHorizontalStrut(0));
         panel.add(Box.createVerticalStrut(50));
-        panel.add(buttonBook);
-
 
         frame.add(panel);
         frame.setVisible(true);
@@ -510,7 +483,7 @@ public class library {
 
     //使用正则表达式来匹配字符串为正整数，不含有空格等其他字符
     public static boolean isPositiveInteger(String str) {
-        Pattern pattern = Pattern.compile("^[1-9]\\d*$");
+        Pattern pattern = Pattern.compile("^[0-9]\\d*$");
         Matcher matcher = pattern.matcher(str.trim()); // 使用trim()去除前后空格
         return matcher.matches();
     }
@@ -518,28 +491,53 @@ public class library {
 
     // 判断文件不存在或读取错误时认为配置不完整
     private static boolean isConfigIncomplete() {
-        try {
-            String content = Files.readString(Paths.get(CONFIG_FILE), StandardCharsets.UTF_8);
-            if(content==null){
+        File configFile = new File(CONFIG_FILE_PATH);
+        if(configFile.exists()) {
+            try {
+
+                // 读取文件内容
+                String content = new String(Files.readAllBytes(Paths.get(CONFIG_FILE_PATH)));
+                // 检查文件内容是否为空
+                return content.trim().isEmpty();
+
+            } catch (IOException e) {
                 return true;
             }
-            boolean  cardNumber=content.contains("学号=")&& content.substring(content.indexOf("学号=") + "学号=".length()).trim().isEmpty();
-            boolean  labRoomId=content.contains("自习室=")&& content.substring(content.indexOf("自习室=") + "自习室=".length()).trim().isEmpty();
-            boolean  seatNum=content.contains("座位号=")&& content.substring(content.indexOf("座位号=") + "座位号=".length()).trim().isEmpty();
-            boolean  labRoomId1=content.contains("备选自习室=")&& content.substring(content.indexOf("备选自习室=") + "备选自习室=".length()).trim().isEmpty();
-            boolean  seatNum1=content.contains("备选座位号=")&& content.substring(content.indexOf("备选座位号=") + "备选座位号=".length()).trim().isEmpty();
-
-            if(!cardNumber||!labRoomId||!seatNum||!labRoomId1||!seatNum1){
-                return true;
-            }
-
-                } catch (IOException e) {
-                    return true;
-                }
-        return false;
+        }else {
+            return true;
+        }
     }
 
 
+
+    private static boolean ConfigComplete() {
+        try (BufferedReader reader = new BufferedReader(new FileReader(CONFIG_FILE_PATH))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (line.contains("=")){
+                    String[] parts = line.split("=", 2); // 限制分割为两部分
+                    if (parts.length > 1) {
+                        String beforeEqual = parts[0].trim(); // 去除前后空白字符
+                        String afterEqual = parts[1].trim(); // 去除前后空白字符
+
+                        // 检查等号前后的内容是否都存在
+                        if (beforeEqual.isEmpty() || afterEqual.isEmpty())
+                        {
+                        return true; // 如果等号前后任一部分为空，返回
+                        }
+                    }else{
+                        return true; // 如果没有等号后面的部分，返回
+                    }
+                }else{
+                    return true;
+                }
+            }
+
+        } catch (IOException e) {
+            return true; // 发生异常时，返回
+        }
+        return false; // 所有行都检查完毕，没有发现等号前后没有内容的情况
+    }
 
     //保存创建的config.txt配置文件，获取填写在面板的信息并写入文件
     private static void saveConfig(String cardNumber, String labRoomId, int seatNum,String labRoomId1,int seatNum1) {
