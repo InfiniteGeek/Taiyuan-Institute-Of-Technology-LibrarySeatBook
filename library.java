@@ -12,11 +12,14 @@ import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -24,29 +27,27 @@ import java.util.regex.Pattern;
 public class library {
 
     private static final String CONFIG_FILE = "config.txt";
-    private static final String Book_URL = "https://mipservice.tit.edu.cn/consumeServer/ReadingRoomWx/userSchLabApply";
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-
-    // 获取当前时间
+    private static final DateTimeFormatter TIME = DateTimeFormatter.ofPattern("HH:mm");
+    private static final LocalTime localTime = LocalTime.now();
 
     public static void main(String[] args) {
-        LocalTime now = LocalTime.now();
-        // 设置开始时间
-        LocalTime Begin = LocalTime.of(20, 29);
         if (isConfigIncomplete()) {
             CreateConfig();//加载或创建配置文件
-        }
-        else if(ConfigComplete()){
+        }else if(ConfigComplete()){
             JOptionPane.showMessageDialog(null, "配置文件内容不完整，请补充！", "配置缺失", JOptionPane.ERROR_MESSAGE);
-            CreateConfig();//加载或创建配置文件
-        }
-        else if((now.equals(Begin) || now.isAfter(Begin))&&TestSystemDelay()) {
-
-            Runnable task = createTask();
-            task.run();
-            System.exit(0);
-        }else{
-            JOptionPane.showMessageDialog(null,"该时段不是规定的预约时段！","预约出错", JOptionPane.ERROR_MESSAGE);
+            CreateConfig();
+        }else if(getConfig("预约时间")!=null&&isTimeComplete(getConfig("预约时间"))) {
+            LocalTime scheduledTime = LocalTime.parse(getConfig("预约时间"), TIME);
+            if ((scheduledTime.equals(localTime) || localTime.isAfter(scheduledTime)) && TestSystemDelay()) {
+                createTask().run();
+                System.exit(0);
+            }else{
+                JOptionPane.showMessageDialog(null,"该时段不是规定的预约时段！","预约出错", JOptionPane.ERROR_MESSAGE);
+            }
+        }else {
+            JOptionPane.showMessageDialog(null, "配置文件内容不完整，请补充！", "配置缺失", JOptionPane.ERROR_MESSAGE);
+            CreateConfig();
         }
     }
 
@@ -63,17 +64,15 @@ public class library {
 
 
         return () -> {
-
             LocalDate tomorrowafter = today.plusDays(2);
             String tomorrowafterDateStr = tomorrowafter.format(formatter);
             String jsonData = loadJsonData(tomorrowafterDateStr);
             String jsonData1 = loadJsonData1(tomorrowafterDateStr);
-
             //第一次预约，首选预约
             sendRequest(jsonData);
-
             //当首选座位被约，立即预约备选座位预约
             if (responseBody.contains("座位已经 在当前时间段已经被预约")) {
+
                 JOptionPane optionPane = new JOptionPane(cardNumber + "  预约失败！ "+"【首选座位】: " + roomName + "的" + seatNum + "号座位 已经被约！ 尝试预约【备选座位】······", JOptionPane.INFORMATION_MESSAGE);
                 JDialog dialog = optionPane.createDialog(null, "预约失败");
                 dialog.setModal(false); // 设置为非模态
@@ -120,15 +119,10 @@ public class library {
             try {
                 URL url = new URL(urlString);
                 HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-
-                // 设置请求方法和请求头
                 connection.setRequestMethod("POST");
                 connection.setRequestProperty("Content-Type", "application/json");
                 connection.setRequestProperty("Accept", "*/*");
                 connection.setRequestProperty("Origin", "https://mipweb.tit.edu.cn");
-                connection.setRequestProperty("Sec-Fetch-Site", "same-site");
-                connection.setRequestProperty("Sec-Fetch-Mode", "cors");
-                connection.setRequestProperty("Sec-Fetch-Dest", "empty");
                 connection.setRequestProperty("Referer", "https://mipweb.tit.edu.cn");
                 connection.setRequestProperty("Accept-Encoding", "gzip, deflate, br");
                 connection.setRequestProperty("Accept-Language", "zh-CN,zh;q=0.9");
@@ -151,28 +145,25 @@ public class library {
                 }
 
                 // 读取响应
-                int responseCode = connection.getResponseCode();
+                //int responseCode = connection.getResponseCode();
 
-                System.out.println("Response Code: " + responseCode);
+
                 boolean continueLoop = true;
 
                 try(Scanner scanner = new Scanner(connection.getInputStream(), "UTF-8").useDelimiter("\\A")) {
                     if (scanner.hasNext()) {
                         String response = scanner.next();
-                        System.out.println("Response: " + response);
+                        //System.out.println("Response Code: " + responseCode+"  Response: " + response);
 
                  while(continueLoop) {
                     if (response.contains("当前用户在 所选择时间周期内 已预约")) {
-                        continueLoop = false;
+                          continueLoop = false;
                     } else if (!response.contains(" 3. 预约准备 查询某一个阅览室的 日期 时间的 座位空闲情况成功")) {
-
                         //System.out.println("等待时间: " + delay + "ms");//测试等待时间
-                        //TimeUnit.MILLISECONDS.sleep(50);
+                        //TimeUnit.MILLISECONDS.sleep(50);//等待时间
                         TestSystemDelay();
-
                     }
-
-                    else if(response.contains(" 3. 预约准备 查询某一个阅览室的 日期 时间的 座位空闲情况成功")){
+                    else{
                         continueLoop = false;
                     }
                     }
@@ -190,9 +181,11 @@ public class library {
 
     private static String responseBody;
     // 发送HTTP请求-预约座位的方法
-    private static void sendRequest(String jsonData) {
-        HttpClient client = HttpClient.newHttpClient();
+    private static String sendRequest(String jsonData) {
+        String Book_URL = "https://mipservice.tit.edu.cn/consumeServer/ReadingRoomWx/userSchLabApply";
+        HttpClient httpClient = HttpClient.newBuilder().build();
         HttpRequest request = HttpRequest.newBuilder()
+
                 .uri(URI.create(Book_URL))
                 .header("Content-Type", "application/json")
                 .header("Accept", "*/*")
@@ -204,14 +197,16 @@ public class library {
                 .build();
 
         try {
-            HttpResponse<String> response = client.send(request, BodyHandlers.ofString());
-            System.out.println("Status Code: " + response.statusCode());
-            responseBody = response.body();
-            System.out.println("Response Body: " + responseBody);
+            HttpResponse<String> response = httpClient.send(request, BodyHandlers.ofString());
 
+            responseBody = response.body();
+            return responseBody;
+            //System.out.println("Status Code: " + response.statusCode());
+            //System.out.println("Response Body: " + responseBody);
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
+        return jsonData;
     }
     //创建楼层-自习室的集合
     private static String[] getRoomNames() {
@@ -246,23 +241,7 @@ public class library {
         return roomMap.getOrDefault(roomName, "1"); // 默认为 二层-报刊阅览室
     }
 
-    //创建楼层-自习室指向数字的hashmap
-    private static String getRoomId1( String roomName) {
-        Map<String, String> roomMap = new HashMap<>();
-        roomMap.put("二层-报刊阅览室", "1");
-        roomMap.put("三层-中文阅览室一", "2");
-        roomMap.put("三层-中文阅览室二", "3");
-        roomMap.put("三层-休闲区", "4");
-        roomMap.put("四层-中文阅览室三", "5");
-        roomMap.put("四层-中文阅览室四", "6");
-        roomMap.put("五层-外文阅览室", "7");
-        roomMap.put("五层-多功能阅览室", "16");
-        roomMap.put("五层-综合阅览室", "8");
-        roomMap.put("六层-多媒体阅览室", "9");
-        roomMap.put("六层-电子阅览室", "10");
-        return roomMap.getOrDefault(roomName, "1"); // 默认为 二层-报刊阅览室
-    }
-
+    //创建楼层-数字指向自习室的hashmap
     private static String getRoomName(String roomId) {
         Map<String, String> roomMap = new HashMap<>();
         roomMap.put("1", "二层-报刊阅览室");
@@ -279,21 +258,7 @@ public class library {
         return roomMap.getOrDefault(roomId, "二层-报刊阅览室"); // 默认为 二层-报刊阅览室
     }
 
-    //将每层的自习室对应的座位数量做出限制
-    private static final Map<String, Integer[]> roomSeatRanges = new HashMap<>();
-    static {
-        roomSeatRanges.put("二层-报刊阅览室", new Integer[]{1, 307});
-        roomSeatRanges.put("三层-中文阅览室一", new Integer[]{1, 307});
-        roomSeatRanges.put("三层-中文阅览室二", new Integer[]{1, 307});
-        roomSeatRanges.put("三层-休闲区", new Integer[]{1, 56});
-        roomSeatRanges.put("四层-中文阅览室三", new Integer[]{1, 288});
-        roomSeatRanges.put("四层-中文阅览室四", new Integer[]{1, 288});
-        roomSeatRanges.put("五层-外文阅览室", new Integer[]{1,416});
-        roomSeatRanges.put("五层-多功能阅览室", new Integer[]{1,216});
-        roomSeatRanges.put("五层-综合阅览室", new Integer[]{1, 416});
-        roomSeatRanges.put("六层-多媒体阅览室", new Integer[]{1, 212});
-        roomSeatRanges.put("六层-电子阅览室", new Integer[]{1, 288});
-    }
+    //每层的自习室对应的座位范围
     private static final Map<String, Integer[]> roomSeatRange = new HashMap<>();
     static {
         roomSeatRange.put("二层-报刊阅览室", new Integer[]{1, 307});
@@ -308,11 +273,12 @@ public class library {
         roomSeatRange.put("六层-多媒体阅览室", new Integer[]{1, 212});
         roomSeatRange.put("六层-电子阅览室", new Integer[]{1, 288});
     }
+
     //创建配置文件的UI面板
     private static void CreateConfig() {
         JFrame frame = new JFrame("座位预约");//设置窗口的title
-        frame.setResizable(false); //设置窗口不可调整大小
-        frame.setSize(250, 300); // 设置窗口的初始大小
+        //frame.setResizable(false); //设置窗口不可调整大小
+        frame.setSize(250, 340); // 设置窗口的初始大小
         ImageIcon icon = new ImageIcon("resource//IMG\\座位预约.png");
         frame.setIconImage(icon.getImage());//给窗体设置图标方法
 
@@ -356,18 +322,37 @@ public class library {
         textFieldSeatNum1.setPreferredSize(new Dimension(14, 25));
         textFieldSeatNum1.setFont(new Font("宋体", Font.BOLD, 18));
 
+        JLabel Timer = new JLabel("时  间:");
+        Timer.setFont(new Font("宋体", Font.BOLD, 13));
+        JComboBox<Integer> comboBoxHour = new JComboBox<>();
+        for (int i = 0; i <= 23; i++) {
+            comboBoxHour.addItem(i);
+        }
+
+        comboBoxHour.setBackground(Color.WHITE); // 设置背景色为白色
+        comboBoxHour.setForeground(Color.BLACK); // 设置前景色（文本颜色）为黑色
+        comboBoxHour.setBorder(BorderFactory.createLineBorder(new Color(0, 122, 255)));
+        comboBoxHour.setPreferredSize(new java.awt.Dimension(54, 25));
+        comboBoxHour.setFont(new Font("宋体",Font.BOLD,18));
+
+        JLabel colon = new JLabel(":");
+        colon.setFont(new Font("宋体", Font.BOLD, 30));
+
+        JComboBox<Integer> comboBoxMinute = new JComboBox<>();
+        for (int i = 0; i <= 59; i++) {
+            comboBoxMinute.addItem(i);
+        }
+
+        comboBoxMinute.setBackground(Color.WHITE); // 设置背景色为白色
+        comboBoxMinute.setForeground(Color.BLACK); // 设置前景色（文本颜色）为黑色
+        comboBoxMinute.setBorder(BorderFactory.createLineBorder(new Color(0, 122, 255)));
+        comboBoxMinute.setPreferredSize(new java.awt.Dimension(54, 25));
+        comboBoxMinute.setFont(new Font("宋体",Font.BOLD,18));
+
         JButton buttonSave = new JButton("保   存");
         buttonSave.setFont(new Font("微软雅黑", Font.BOLD, 13));
         buttonSave.setBackground(new Color(0, 122, 255));
         buttonSave.setForeground(Color.WHITE);
-
-
-        JButton buttonBook = new JButton("预约");
-        buttonBook.setFont(new Font("微软雅黑", Font.BOLD, 13));
-        buttonBook.setBackground(new Color(255, 255, 255, 255));
-        buttonBook.setForeground(Color.GRAY);
-
-
 
         buttonSave.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
@@ -376,10 +361,15 @@ public class library {
                         String roomName1 = (String) comboBoxRoomName1.getSelectedItem();
 
                         String labRoomId = getRoomId(roomName);
-                        String labRoomId1 = getRoomId1(roomName1);
+                        String labRoomId1 = getRoomId(roomName1);
 
                         String seatNumStr = textFieldSeatNum.getText().trim();
                         String seatNumStr1 = textFieldSeatNum1.getText().trim();
+
+                        int Hour = (int) comboBoxHour.getSelectedItem();
+                        int Minute = (int) comboBoxMinute.getSelectedItem();
+
+
 
                         if (cardNumber.isEmpty() || seatNumStr.isEmpty()|| seatNumStr1.isEmpty()) {
                             JOptionPane.showMessageDialog(frame, "学号、座位号、备选座位号不能为空！");
@@ -394,11 +384,12 @@ public class library {
                             return;
                         }
 
+
                         try {
                             int seatNum = Integer.parseInt(seatNumStr);
                             int seatNum1 = Integer.parseInt(seatNumStr1);
 
-                            Integer[] range = roomSeatRanges.get(roomName);
+                            Integer[] range = roomSeatRange.get(roomName);
                             Integer[] range1 = roomSeatRange.get(roomName1);
 
                             if(seatNum < range[0] || seatNum > range[1]||seatNum1 < range1[0] || seatNum1 > range1[1]){
@@ -408,11 +399,23 @@ public class library {
                                     JOptionPane.showMessageDialog(frame, "座位号或备选座位号填写错误！"+"\n"+roomName+"的座位号范围：" + range[0] + "-" + range[1]+"\n"+roomName1+"的座位号范围：" + range1[0] + "-" + range1[1],"信息错误", JOptionPane.ERROR_MESSAGE);
                                 }
                                 return;
-
                             }
 
-                            // 保存配置
-                            saveConfig(cardNumber, labRoomId, seatNum,labRoomId1,seatNum1);
+                            if(Hour<10&&Minute<10) {
+                                String Time = "0" + Hour + ":" + "0" + Minute;
+                                saveConfig(cardNumber, labRoomId, seatNum, labRoomId1, seatNum1, Time);  // 保存配置
+                            }else if(Hour>=10&&Minute>=10){
+                                String Time =Hour + ":"  + Minute;
+                                saveConfig(cardNumber, labRoomId, seatNum, labRoomId1, seatNum1, Time);
+                            }else if(Hour<10&&Minute>=10){
+                                String Time ="0" +Hour + ":"  + Minute;
+                                saveConfig(cardNumber, labRoomId, seatNum, labRoomId1, seatNum1, Time);
+                            }else if(Hour>=10&&Minute<10){
+                                String Time =Hour + ":"  +"0"+Minute;
+                                saveConfig(cardNumber, labRoomId, seatNum, labRoomId1, seatNum1, Time);
+                            }
+
+
                             JOptionPane.showMessageDialog(null, "保存配置成功！");
                             frame.dispose();
 
@@ -473,6 +476,18 @@ public class library {
         panel.add(Box.createHorizontalStrut(0));
         panel.add(Box.createVerticalStrut(35));
 
+        panel.add(Timer);
+
+        panel.add(Box.createHorizontalStrut(0));
+        panel.add(Box.createVerticalStrut(35));
+
+        panel.add(comboBoxHour);
+        panel.add(colon);
+        panel.add(comboBoxMinute);
+
+        panel.add(Box.createHorizontalStrut(0));
+        panel.add(Box.createVerticalStrut(35));
+
         panel.add(buttonSave);
         panel.add(Box.createHorizontalStrut(0));
         panel.add(Box.createVerticalStrut(50));
@@ -482,19 +497,25 @@ public class library {
     }
 
     //使用正则表达式来匹配字符串为正整数，不含有空格等其他字符
+
     public static boolean isPositiveInteger(String str) {
         Pattern pattern = Pattern.compile("^[0-9]\\d*$");
         Matcher matcher = pattern.matcher(str.trim()); // 使用trim()去除前后空格
         return matcher.matches();
     }
-
+    public static boolean isTimeComplete(String time) {
+        // 正则表达式，用于匹配格式为HH:mm的时间字符串
+        Pattern pattern = Pattern.compile("^([01]?[0-9]|2[0-3]):[0-5][0-9]$");
+        Matcher matcher = pattern.matcher(time.trim());
+        // 如果时间字符串匹配正则表达式，则时间完整且格式正确
+        return matcher.matches();
+    }
 
     // 判断文件不存在或读取错误时认为配置不完整
     private static boolean isConfigIncomplete() {
         File configFile = new File(CONFIG_FILE_PATH);
         if(configFile.exists()) {
             try {
-
                 // 读取文件内容
                 String content = new String(Files.readAllBytes(Paths.get(CONFIG_FILE_PATH)));
                 // 检查文件内容是否为空
@@ -536,12 +557,13 @@ public class library {
         } catch (IOException e) {
             return true; // 发生异常时，返回
         }
+        loadConfigIntoMemory();
         return false; // 所有行都检查完毕，没有发现等号前后没有内容的情况
     }
 
     //保存创建的config.txt配置文件，获取填写在面板的信息并写入文件
-    private static void saveConfig(String cardNumber, String labRoomId, int seatNum,String labRoomId1,int seatNum1) {
-        String content = String.format("学号=%s\n自习室=%s\n座位号=%s\n备选自习室=%s\n备选座位号=%s\n", cardNumber, labRoomId, seatNum,labRoomId1,seatNum1);
+    private static void saveConfig(String cardNumber, String labRoomId, int seatNum,String labRoomId1,int seatNum1,String Time) {
+        String content = String.format("学号=%s\n自习室=%s\n座位号=%s\n备选自习室=%s\n备选座位号=%s\n预约时间=%s\n", cardNumber, labRoomId, seatNum,labRoomId1,seatNum1,Time);
         try {
             Files.writeString(Paths.get(CONFIG_FILE), content, StandardCharsets.UTF_8);
         } catch (IOException e) {
@@ -554,32 +576,45 @@ public class library {
         String cardNumber = getConfig("学号");
         String labRoomId = getConfig("自习室");
         String seatNum = getConfig("座位号");
+
         return String.format("{\"cardNumber\": \"%s\", \"applyDate\": \"%s\", \"applyStartTime\": \"06:30\", \"applyDuration\": \"15.5\", \"labRoomId\": \"%s\", \"seatNum\": \"%s\"}",
-                cardNumber, dateStr, labRoomId, seatNum);
+                    cardNumber, dateStr, labRoomId, seatNum);
     }
+
     private static String loadJsonData1(String dateStr) {
         String cardNumber = getConfig("学号");
         String labRoomId1 = getConfig("备选自习室");
         String seatNum1= getConfig("备选座位号");
-        return String.format("{\"cardNumber\": \"%s\", \"applyDate\": \"%s\", \"applyStartTime\": \"06:30\", \"applyDuration\": \"15.5\", \"labRoomId\": \"%s\", \"seatNum\": \"%s\"}",
-                cardNumber, dateStr, labRoomId1, seatNum1);
-    }
 
+        return String.format("{\"cardNumber\": \"%s\", \"applyDate\": \"%s\", \"applyStartTime\": \"06:30\", \"applyDuration\": \"15.5\", \"labRoomId\": \"%s\", \"seatNum\": \"%s\"}",
+                    cardNumber, dateStr, labRoomId1, seatNum1);
+    }
 
 
     //读取配置文件中的信息
     private static final String CONFIG_FILE_PATH = System.getProperty("user.dir") + File.separator + "config.txt";
-    private static String getConfig(String key) {
+    private static void loadConfigIntoMemory() {
         try {
-            String content = Files.readString(Paths.get(CONFIG_FILE_PATH), StandardCharsets.UTF_8);
-            for (String line : content.lines().toList()) {
-                if (line.startsWith(key + "=")) {
-                    return line.substring(key.length() + 1);
+            Path configFilePath = Paths.get(CONFIG_FILE_PATH);
+            if (Files.exists(configFilePath)) {
+                String content = Files.readString(configFilePath);
+                for (String line : content.lines().toList()) {
+                    if (!line.trim().isEmpty()) {
+                        String[] parts = line.split("=", 2);
+                        if (parts.length == 2) {
+                            configCache.put(parts[0].trim(), parts[1].trim());
+                        }
+                    }
                 }
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return null;
+    }
+    private static final Map<String, String> configCache = new HashMap<>(); // 存储配置的内存映射
+
+    // 根据键从内存映射中获取配置值
+    private static String getConfig(String key) {
+            return configCache.get(key);
     }
 }
