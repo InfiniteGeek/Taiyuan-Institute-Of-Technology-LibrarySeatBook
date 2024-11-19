@@ -4,9 +4,10 @@
 
 1.下载安装
 
-2.输入学号、楼层自习室、座位号，保存信息
+2.输入学号、楼层自习室、座位号、预约时间(设置为20:29)，保存信息
 
-![PixPin_2024-11-06_23-35-47](https://github.com/user-attachments/assets/b3fb86e7-6b0b-4586-8f59-6915c8545356)
+![image-20241119231146002](https://cdn.jsdelivr.net/gh/InfiniteGeek/Picture/bilibili/image-20241119231146002.png)
 
 3.加入windows的“任务计划程序”
 
+![image-20241119231254213](https://cdn.jsdelivr.net/gh/InfiniteGeek/Picture/bilibili/image-20241119231254213.png)
