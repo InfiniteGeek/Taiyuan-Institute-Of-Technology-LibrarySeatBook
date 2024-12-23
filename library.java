@@ -28,10 +28,11 @@ public class library {
 
     private static final String CONFIG_FILE = "config.txt";
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    private static final DateTimeFormatter formatter1 = DateTimeFormatter.ofPattern("MM-dd");
     private static final DateTimeFormatter TIME = DateTimeFormatter.ofPattern("HH:mm");
     private static final LocalTime localTime = LocalTime.now();
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         if (isConfigIncomplete()) {
             CreateConfig();//加载或创建配置文件
         }else if(ConfigComplete()){
@@ -39,9 +40,10 @@ public class library {
             CreateConfig();
         }else if(getConfig("预约时间")!=null&&isTimeComplete(getConfig("预约时间"))) {
             LocalTime scheduledTime = LocalTime.parse(getConfig("预约时间"), TIME);
-            if ((scheduledTime.equals(localTime) || localTime.isAfter(scheduledTime)) && TestSystemDelay()) {
+            if ((scheduledTime.equals(localTime) || localTime.isAfter(scheduledTime))) {
+                if(TestSystemDelay()){
                 createTask().run();
-                System.exit(0);
+                System.exit(0);}
             }else{
                 JOptionPane.showMessageDialog(null,"该时段不是规定的预约时段！","预约出错", JOptionPane.ERROR_MESSAGE);
             }
@@ -61,10 +63,10 @@ public class library {
         String seatNum1 = getConfig("备选座位号");
         String roomName = getRoomName(labRoomId);
         String roomName1 = getRoomName(labRoomId1);
-
+        String Day=getConfig("预约天限");
 
         return () -> {
-            LocalDate tomorrowafter = today.plusDays(2);
+            LocalDate tomorrowafter = today.plusDays(Long.parseLong(Day));
             String tomorrowafterDateStr = tomorrowafter.format(formatter);
             String jsonData = loadJsonData(tomorrowafterDateStr);
             String jsonData1 = loadJsonData1(tomorrowafterDateStr);
@@ -114,66 +116,57 @@ public class library {
 
 
     //测试预约系统的开放时间
-    private static boolean TestSystemDelay(){
-            String urlString = "https://mipservice.tit.edu.cn/consumeServer/ReadingRoomWx/getReadyForOneSchLabApply";
-            try {
-                URL url = new URL(urlString);
-                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                connection.setRequestMethod("POST");
-                connection.setRequestProperty("Content-Type", "application/json");
-                connection.setRequestProperty("Accept", "*/*");
-                connection.setRequestProperty("Origin", "https://mipweb.tit.edu.cn");
-                connection.setRequestProperty("Referer", "https://mipweb.tit.edu.cn");
-                connection.setRequestProperty("Accept-Encoding", "gzip, deflate, br");
-                connection.setRequestProperty("Accept-Language", "zh-CN,zh;q=0.9");
-                connection.setDoOutput(true);
+    private static boolean TestSystemDelay() throws IOException {
+        String urlString = "https://mipservice.tit.edu.cn/consumeServer/ReadingRoomWx/getReadyForOneSchLabApply";
+        URL url = new URL(urlString);
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("POST");
+        connection.setRequestProperty("Content-Type", "application/json");
+        connection.setRequestProperty("Accept", "*/*");
+        connection.setRequestProperty("Origin", "https://mipweb.tit.edu.cn");
+        connection.setRequestProperty("Referer", "https://mipweb.tit.edu.cn");
+        connection.setRequestProperty("Accept-Encoding", "gzip, deflate, br");
+        connection.setRequestProperty("Accept-Language", "zh-CN,zh;q=0.9");
+        connection.setDoOutput(true);
 
-                LocalDate today = LocalDate.now();
-                String cardNumber = getConfig("学号");
-                String labRoomId = getConfig("自习室");
-                String seatNum = getConfig("座位号");
+        LocalDate today = LocalDate.now();
+        String cardNumber = getConfig("学号");
+        String labRoomId = getConfig("自习室");
+        String seatNum = getConfig("座位号");
+        String Day = getConfig("预约天限");
 
-                LocalDate tomorrowafter = today.plusDays(2);
-                String tomorrowafterDateStr = tomorrowafter.format(formatter);
-                String jsonInputString=String.format("{\"cardNumber\": \"%s\", \"applyDate\": \"%s\", \"applyStartTime\": \"06:30\", \"applyDuration\": \"15.5\", \"labRoomId\": \"%s\", \"seatNum\": \"%s\"}",
-                        cardNumber, tomorrowafterDateStr, labRoomId, seatNum);
+        LocalDate tomorrowafter = today.plusDays(Long.parseLong(Day));
+        String tomorrowafterDateStr = tomorrowafter.format(formatter);
+        String jsonInputString = String.format("{\"cardNumber\": \"%s\", \"applyDate\": \"%s\", \"applyStartTime\": \"06:30\", \"applyDuration\": \"15.5\", \"labRoomId\": \"%s\", \"seatNum\": \"%s\"}",
+                cardNumber, tomorrowafterDateStr, labRoomId, seatNum);
 
-                // 构建请求体
-                try(OutputStream os = connection.getOutputStream()) {
-                    byte[] input = jsonInputString.getBytes("utf-8");
-                    os.write(input, 0, input.length);
-                }
+        // 构建请求体
+        try (OutputStream os = connection.getOutputStream()) {
+            byte[] input = jsonInputString.getBytes("utf-8");
+            os.write(input, 0, input.length);
+        }
 
-                // 读取响应
-                //int responseCode = connection.getResponseCode();
+        // 读取响应
+        //int responseCode = connection.getResponseCode();
 
 
-                boolean continueLoop = true;
+        boolean continueLoop = true;
 
-                try(Scanner scanner = new Scanner(connection.getInputStream(), "UTF-8").useDelimiter("\\A")) {
-                    if (scanner.hasNext()) {
-                        String response = scanner.next();
-                        //System.out.println("Response Code: " + responseCode+"  Response: " + response);
-
-                 while(continueLoop) {
+        try (Scanner scanner = new Scanner(connection.getInputStream(), "UTF-8").useDelimiter("\\A")) {
+            if (scanner.hasNext()) {
+                String response = scanner.next();
+                while (continueLoop) {
                     if (response.contains("当前用户在 所选择时间周期内 已预约")) {
-                          continueLoop = false;
+                        continueLoop = false;
                     } else if (!response.contains(" 3. 预约准备 查询某一个阅览室的 日期 时间的 座位空闲情况成功")) {
-                        //System.out.println("等待时间: " + delay + "ms");//测试等待时间
-                        //TimeUnit.MILLISECONDS.sleep(50);//等待时间
                         TestSystemDelay();
-                    }
-                    else{
+                    } else {
                         continueLoop = false;
                     }
-                    }
-                 return true;
-                    }
                 }
-            } catch (Exception e) {
-                return false;
+                return true;
             }
-        return false;
+        }return false;
     }
 
 
@@ -274,65 +267,91 @@ public class library {
         roomSeatRange.put("六层-电子阅览室", new Integer[]{1, 288});
     }
 
+    private static String[] getDaySets() {
+        return new String[]{
+                "后天"+" ( "+LocalDate.now().plusDays(2).format(formatter1)+" )",
+                "明天"+" ( "+LocalDate.now().plusDays(1).format(formatter1)+" )",
+                "今天"+" ( "+LocalDate.now().plusDays(0).format(formatter1)+" )",
+                };
+    }
+
+    private static String getNo_Day(String DayON) {
+        Map<String, String> Daymap = new HashMap<>();
+        Daymap.put("后天", "2");
+        Daymap.put("明天", "1");
+        Daymap.put("今天", "0");
+        return Daymap.getOrDefault(DayON, "2"); // 默认为 后天
+    }
+
     //创建配置文件的UI面板
     private static void CreateConfig() {
         JFrame frame = new JFrame("座位预约");//设置窗口的title
-        //frame.setResizable(false); //设置窗口不可调整大小
-        frame.setSize(250, 340); // 设置窗口的初始大小
+        frame.setResizable(false); //设置窗口不可调整大小
+        frame.setSize(250, 380); // 设置窗口的初始大小
         ImageIcon icon = new ImageIcon("resource//IMG\\座位预约.png");
         frame.setIconImage(icon.getImage());//给窗体设置图标方法
 
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);//设置窗口关闭后关闭程序
         frame.setLocationRelativeTo(null);//居中定位
 
-        JPanel panel = new JPanel();
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
         JLabel labelCardNumber = new JLabel("学  号:");
-        labelCardNumber.setFont(new Font("宋体", Font.BOLD, 13));
-        JTextField textFieldCardNumber = new JTextField(13);
+        labelCardNumber.setFont(new Font("宋体", Font.BOLD, 14));
+        JTextField textFieldCardNumber = new JTextField(15);
         textFieldCardNumber.setPreferredSize(new Dimension(14, 25));
-        textFieldCardNumber.setFont(new Font("宋体", Font.BOLD, 18));
+        textFieldCardNumber.setFont(new Font("宋体", Font.BOLD, 16));
 
         JLabel labelRoomName = new JLabel("自习室:");
         JComboBox<String> comboBoxRoomName = new JComboBox<>(getRoomNames());
-        labelRoomName.setFont(new Font("宋体", Font.BOLD, 13));
+        labelRoomName.setFont(new Font("宋体", Font.BOLD, 14));
+        comboBoxRoomName.setFont(new Font("宋体", Font.BOLD, 13));
         comboBoxRoomName.setBackground(Color.WHITE); // 设置背景色为白色
         comboBoxRoomName.setForeground(Color.BLACK); // 设置前景色（文本颜色）为黑色
         comboBoxRoomName.setBorder(BorderFactory.createLineBorder(new Color(0, 122, 255))); // 设置下拉框的边框色为黑色
+        comboBoxRoomName.setPreferredSize(new Dimension(140, 28)); // 宽度为100像素，高度为25像素
 
         JLabel labelSeatNum = new JLabel("座位号:");
-        labelSeatNum.setFont(new Font("宋体", Font.BOLD, 13));
-        JTextField textFieldSeatNum = new JTextField(13);
+        labelSeatNum.setFont(new Font("宋体", Font.BOLD, 14));
+        JTextField textFieldSeatNum = new JTextField(15);
         textFieldSeatNum.setPreferredSize(new Dimension(14, 25));
-        textFieldSeatNum.setFont(new Font("宋体", Font.BOLD, 18));
-
-
+        textFieldSeatNum.setFont(new Font("宋体", Font.BOLD, 16));
 
         JLabel labelRoomName1 = new JLabel("备选室:");
         JComboBox<String> comboBoxRoomName1 = new JComboBox<>(getRoomNames());
-        labelRoomName1.setFont(new Font("宋体", Font.BOLD, 13));
+        labelRoomName1.setFont(new Font("宋体", Font.BOLD, 14));
+        comboBoxRoomName1.setFont(new Font("宋体", Font.BOLD, 13));
         comboBoxRoomName1.setBackground(Color.WHITE); // 设置背景色为白色
         comboBoxRoomName1.setForeground(Color.BLACK); // 设置前景色（文本颜色）为黑色
         comboBoxRoomName1.setBorder(BorderFactory.createLineBorder(new Color(0, 122, 255))); // 设置下拉框的边框色为黑色
+        comboBoxRoomName1.setPreferredSize(new Dimension(140, 28)); // 宽度为100像素，高度为25像素
 
         JLabel labelSeatNum1 = new JLabel("备选号:");
-        labelSeatNum1.setFont(new Font("宋体", Font.BOLD, 13));
-        JTextField textFieldSeatNum1 = new JTextField(13);
-        textFieldSeatNum1.setPreferredSize(new Dimension(14, 25));
-        textFieldSeatNum1.setFont(new Font("宋体", Font.BOLD, 18));
+        labelSeatNum1.setFont(new Font("宋体", Font.BOLD, 14));
+        JTextField textFieldSeatNum1 = new JTextField(15);
+        textFieldSeatNum1.setPreferredSize(new Dimension(15, 25));
+        textFieldSeatNum1.setFont(new Font("宋体", Font.BOLD, 16));
+
+        JLabel labelDaySet = new JLabel("天  限:");
+        JComboBox<String> comboBoxDaySet = new JComboBox<>(getDaySets());
+        labelDaySet.setFont(new Font("宋体", Font.BOLD, 14));
+        comboBoxDaySet.setFont(new Font("宋体", Font.BOLD, 14));
+        comboBoxDaySet.setBackground(Color.WHITE); // 设置背景色为白色
+        comboBoxDaySet.setForeground(Color.BLACK); // 设置前景色（文本颜色）为黑色
+        comboBoxDaySet.setBorder(BorderFactory.createLineBorder(new Color(0, 122, 255))); // 设置下拉框的边框色为黑色
+        comboBoxDaySet.setPreferredSize(new Dimension(140, 28)); // 宽度为100像素，高度为25像素
 
         JLabel Timer = new JLabel("时  间:");
-        Timer.setFont(new Font("宋体", Font.BOLD, 13));
+        Timer.setFont(new Font("宋体", Font.BOLD, 14));
         JComboBox<Integer> comboBoxHour = new JComboBox<>();
+
         for (int i = 0; i <= 23; i++) {
             comboBoxHour.addItem(i);
         }
 
+
         comboBoxHour.setBackground(Color.WHITE); // 设置背景色为白色
         comboBoxHour.setForeground(Color.BLACK); // 设置前景色（文本颜色）为黑色
         comboBoxHour.setBorder(BorderFactory.createLineBorder(new Color(0, 122, 255)));
-        comboBoxHour.setPreferredSize(new java.awt.Dimension(54, 25));
+        comboBoxHour.setPreferredSize(new java.awt.Dimension(59, 25));
         comboBoxHour.setFont(new Font("宋体",Font.BOLD,18));
 
         JLabel colon = new JLabel(":");
@@ -346,11 +365,11 @@ public class library {
         comboBoxMinute.setBackground(Color.WHITE); // 设置背景色为白色
         comboBoxMinute.setForeground(Color.BLACK); // 设置前景色（文本颜色）为黑色
         comboBoxMinute.setBorder(BorderFactory.createLineBorder(new Color(0, 122, 255)));
-        comboBoxMinute.setPreferredSize(new java.awt.Dimension(54, 25));
+        comboBoxMinute.setPreferredSize(new java.awt.Dimension(55, 25));
         comboBoxMinute.setFont(new Font("宋体",Font.BOLD,18));
 
         JButton buttonSave = new JButton("保   存");
-        buttonSave.setFont(new Font("微软雅黑", Font.BOLD, 13));
+        buttonSave.setFont(new Font("微软雅黑", Font.BOLD, 14));
         buttonSave.setBackground(new Color(0, 122, 255));
         buttonSave.setForeground(Color.WHITE);
 
@@ -369,7 +388,8 @@ public class library {
                         int Hour = (int) comboBoxHour.getSelectedItem();
                         int Minute = (int) comboBoxMinute.getSelectedItem();
 
-
+                        String DaySet= (String) comboBoxDaySet.getSelectedItem();
+                        String Day= getNo_Day(DaySet);
 
                         if (cardNumber.isEmpty() || seatNumStr.isEmpty()|| seatNumStr1.isEmpty()) {
                             JOptionPane.showMessageDialog(frame, "学号、座位号、备选座位号不能为空！");
@@ -383,8 +403,6 @@ public class library {
                             JOptionPane.showMessageDialog(frame, "座位号和备选座位号不能相同！");
                             return;
                         }
-
-
                         try {
                             int seatNum = Integer.parseInt(seatNumStr);
                             int seatNum1 = Integer.parseInt(seatNumStr1);
@@ -403,18 +421,17 @@ public class library {
 
                             if(Hour<10&&Minute<10) {
                                 String Time = "0" + Hour + ":" + "0" + Minute;
-                                saveConfig(cardNumber, labRoomId, seatNum, labRoomId1, seatNum1, Time);  // 保存配置
+                                saveConfig(cardNumber, labRoomId, seatNum, labRoomId1, seatNum1, Time,Day);  // 保存配置
                             }else if(Hour>=10&&Minute>=10){
                                 String Time =Hour + ":"  + Minute;
-                                saveConfig(cardNumber, labRoomId, seatNum, labRoomId1, seatNum1, Time);
+                                saveConfig(cardNumber, labRoomId, seatNum, labRoomId1, seatNum1, Time,Day);
                             }else if(Hour<10&&Minute>=10){
                                 String Time ="0" +Hour + ":"  + Minute;
-                                saveConfig(cardNumber, labRoomId, seatNum, labRoomId1, seatNum1, Time);
+                                saveConfig(cardNumber, labRoomId, seatNum, labRoomId1, seatNum1, Time,Day);
                             }else if(Hour>=10&&Minute<10){
                                 String Time =Hour + ":"  +"0"+Minute;
-                                saveConfig(cardNumber, labRoomId, seatNum, labRoomId1, seatNum1, Time);
+                                saveConfig(cardNumber, labRoomId, seatNum, labRoomId1, seatNum1, Time,Day);
                             }
-
 
                             JOptionPane.showMessageDialog(null, "保存配置成功！");
                             frame.dispose();
@@ -425,6 +442,7 @@ public class library {
                     }
                 });
 
+        JPanel panel = new JPanel();
         panel.add(labelCardNumber);
 
         panel.add(Box.createHorizontalStrut(0));
@@ -476,6 +494,15 @@ public class library {
         panel.add(Box.createHorizontalStrut(0));
         panel.add(Box.createVerticalStrut(35));
 
+        panel.add(labelDaySet);
+        panel.add(Box.createHorizontalStrut(0));
+        panel.add(Box.createVerticalStrut(35));
+
+        panel.add(comboBoxDaySet);
+
+        panel.add(Box.createHorizontalStrut(0));
+        panel.add(Box.createVerticalStrut(35));
+
         panel.add(Timer);
 
         panel.add(Box.createHorizontalStrut(0));
@@ -497,7 +524,6 @@ public class library {
     }
 
     //使用正则表达式来匹配字符串为正整数，不含有空格等其他字符
-
     public static boolean isPositiveInteger(String str) {
         Pattern pattern = Pattern.compile("^[0-9]\\d*$");
         Matcher matcher = pattern.matcher(str.trim()); // 使用trim()去除前后空格
@@ -510,7 +536,7 @@ public class library {
         // 如果时间字符串匹配正则表达式，则时间完整且格式正确
         return matcher.matches();
     }
-
+    
     // 判断文件不存在或读取错误时认为配置不完整
     private static boolean isConfigIncomplete() {
         File configFile = new File(CONFIG_FILE_PATH);
@@ -520,7 +546,6 @@ public class library {
                 String content = new String(Files.readAllBytes(Paths.get(CONFIG_FILE_PATH)));
                 // 检查文件内容是否为空
                 return content.trim().isEmpty();
-
             } catch (IOException e) {
                 return true;
             }
@@ -528,8 +553,6 @@ public class library {
             return true;
         }
     }
-
-
 
     private static boolean ConfigComplete() {
         try (BufferedReader reader = new BufferedReader(new FileReader(CONFIG_FILE_PATH))) {
@@ -540,7 +563,6 @@ public class library {
                     if (parts.length > 1) {
                         String beforeEqual = parts[0].trim(); // 去除前后空白字符
                         String afterEqual = parts[1].trim(); // 去除前后空白字符
-
                         // 检查等号前后的内容是否都存在
                         if (beforeEqual.isEmpty() || afterEqual.isEmpty())
                         {
@@ -562,8 +584,8 @@ public class library {
     }
 
     //保存创建的config.txt配置文件，获取填写在面板的信息并写入文件
-    private static void saveConfig(String cardNumber, String labRoomId, int seatNum,String labRoomId1,int seatNum1,String Time) {
-        String content = String.format("学号=%s\n自习室=%s\n座位号=%s\n备选自习室=%s\n备选座位号=%s\n预约时间=%s\n", cardNumber, labRoomId, seatNum,labRoomId1,seatNum1,Time);
+    private static void saveConfig(String cardNumber, String labRoomId, int seatNum,String labRoomId1,int seatNum1,String Time,String Day) {
+        String content = String.format("学号=%s\n自习室=%s\n座位号=%s\n备选自习室=%s\n备选座位号=%s\n预约时间=%s\n预约天限=%s\n", cardNumber, labRoomId, seatNum,labRoomId1,seatNum1,Time,Day);
         try {
             Files.writeString(Paths.get(CONFIG_FILE), content, StandardCharsets.UTF_8);
         } catch (IOException e) {
