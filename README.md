@@ -1,13 +1,22 @@
 # Taiyuan-Institute-Of-Technology-LibrarySeatBook(太原工业学院预约图书馆座位软件)
 
- 使用方法：
+# 使用说明
 
-1.下载安装
+1.双击打开LibrarySeatBook.exe
 
-2.输入学号、楼层自习室、座位号、预约时间(设置为20:29)、天限默认后天，保存信息
+时间设置为20：30、天限设置保持默认(默认预约后天)
 
-![image-20241223131533403](https://cdn.jsdelivr.net/gh/InfiniteGeek/Picture/windows/image-20241223131533403.png)
+保存设置
 
-3.加入windows的“任务计划程序”
+2.右键以管理员身份运行bat文件，创建自启动
 
-![image-20241119231254213](https://cdn.jsdelivr.net/gh/InfiniteGeek/Picture/bilibili/image-20241119231254213.png)
+3.电脑在预约时间前(20：30)保持开机，即可完成运行
+
+
+
+## 提示：如果软件界面模糊，解决方法：
+
+右键exe-属性-兼容性-更改更高的DPI
+
+将“使用此设置修复此程序的缩放问题，而不是“设置"中的缩放问题”和“高DPI缩放替代 替代高DPI缩放行为(应用程序)”这两项打勾✔
+
