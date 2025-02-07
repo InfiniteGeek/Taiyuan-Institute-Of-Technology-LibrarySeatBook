@@ -1,4 +1,4 @@
-# Taiyuan-Institute-Of-Technology-LibrarySeatBook(太原工业学院预约图书馆座位软件)
+# Taiyuan-Institute-Of-Technology-LibrarySeatBook(太原工业学院图书馆自动预约座位软件)
 
 # 使用说明
 
