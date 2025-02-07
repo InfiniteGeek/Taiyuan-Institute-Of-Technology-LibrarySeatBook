@@ -51,8 +51,9 @@ public class library {
                         if (TestSystemDelay()) {
                             createTask().run();
                         }
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        JOptionPane.showMessageDialog(null, "预约请求响应超时，小程序瘫痪中ing······或网络连接中断", " 响应超时", JOptionPane.WARNING_MESSAGE);
                     }
                 }
 
@@ -93,40 +94,58 @@ public class library {
             sendRequest(jsonData);
             //当首选座位被约，立即预约备选座位预约
             if (responseBody.contains("座位已经 在当前时间段已经被预约")) {
-
-                JOptionPane optionPane = new JOptionPane(cardNumber + "  预约失败！ "+"【首选座位】: " + roomName + "的" + seatNum + "号座位 已经被约！ 尝试预约【备选座位】······", JOptionPane.INFORMATION_MESSAGE);
-                JDialog dialog = optionPane.createDialog(null, "预约失败");
-                dialog.setModal(false); // 设置为非模态
-                dialog.setVisible(true);
+                //第一次预约失败
+                JOptionPane Appointment_failed = new JOptionPane(cardNumber + "  预约失败！ "+"【首选座位】: " + roomName + "的" + seatNum + "号座位 已经被约！ 尝试预约【备选座位】······", JOptionPane.INFORMATION_MESSAGE);
+                JDialog Appointment_failed_JDialog = Appointment_failed.createDialog(null, "预约失败");
+                Appointment_failed_JDialog.setModal(false); // 设置为非模态
+                Appointment_failed_JDialog.setVisible(true);
 
                 try {
                     TimeUnit.SECONDS.sleep(5);
-                    dialog.dispose(); // 关闭第一次预约失败的对话框
+                    Appointment_failed_JDialog.dispose(); // 关闭第一次预约失败的对话框
                     TimeUnit.SECONDS.sleep(5);
-                    sendRequest(jsonData1);//第二次预约，备选预约
+                    sendRequest(jsonData1);//第二次预约
 
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
 
                 if(responseBody.contains("座位已经 在当前时间段已经被预约")){
+                    //第二次预约失败
                     JOptionPane.showMessageDialog(null,cardNumber + "  预约失败！ "+"【备选座位】: "+roomName1+"的"+seatNum1+"号座位 已经被约","预约失败", JOptionPane.ERROR_MESSAGE);
+                } else if (responseBody.contains("4. 接受预约 校验通过后 进行预约成功")){
+                    //第二次预约成功
+                    JOptionPane Appointment_successful1 = new JOptionPane(cardNumber+"  预约成功！ "+" 预约【备选座位】: "+roomName1+"的"+seatNum1+"号座位成功", JOptionPane.INFORMATION_MESSAGE);
+                    JDialog Appointment_successful1_JDialog = Appointment_successful1.createDialog(null, "预约成功");
+                    Appointment_successful1_JDialog.setModal(false);
+                    Appointment_successful1_JDialog.setVisible(true);
+                    try {
+                        TimeUnit.MINUTES.sleep(15);
+                        Appointment_successful1_JDialog.dispose();//关闭第二次预约成功的对话框
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                 }
-                else if (responseBody.contains("4. 接受预约 校验通过后 进行预约成功")){
-                    JOptionPane.showMessageDialog(null, cardNumber+"  预约成功！ "+" 预约【被选座位】: "+roomName1+"的"+seatNum1+"号座位成功");
-                }
-
             }
-
             // 检查并显示消息
             else if (responseBody.contains("4. 接受预约 校验通过后 进行预约成功")){
-                JOptionPane.showMessageDialog(null, cardNumber+"  预约成功！ "+" 预约【首选座位】: "+roomName+"的"+seatNum+"号座位成功");
+                //第一次预约成功
+                JOptionPane Appointment_successful = new JOptionPane(cardNumber+"  预约成功！ "+" 预约【首选座位】: "+roomName+"的"+seatNum+"号座位成功", JOptionPane.INFORMATION_MESSAGE);
+                JDialog Appointment_successful_JDialog = Appointment_successful.createDialog(null, "预约成功");
+                Appointment_successful_JDialog.setModal(false);
+                Appointment_successful_JDialog.setVisible(true);
+                try {
+                    TimeUnit.MINUTES.sleep(15);
+                    Appointment_successful_JDialog.dispose();//关闭第一次预约成功的对话框
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
             else if (responseBody.contains("当前用户在 所选择时间周期内 已预约")) {
-                JOptionPane.showMessageDialog(null, cardNumber+"  该时间段已有预约,请勿重复预约","重复预约", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(null, cardNumber+"  该时间段已有预约,请勿重复预约","重复预约", JOptionPane.WARNING_MESSAGE);
             }
             else if (responseBody.contains("4. 接受预约 校验通过后 进行预约参数缺失 或者日期非今日明日后日")) {
-                JOptionPane.showMessageDialog(null, "  预约参数缺失 或 不在规定预约时间内","预约出错", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(null, "  预约参数缺失 或 不在规定预约时间内","预约出错", JOptionPane.WARNING_MESSAGE);
             }
 
 
@@ -165,7 +184,7 @@ public class library {
             try (OutputStream os = connection.getOutputStream()) {
                 byte[] input = jsonInputString.getBytes("utf-8");
                 os.write(input, 0, input.length);
-            } catch (IOException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
 
@@ -216,7 +235,7 @@ public class library {
             return responseBody;
             //System.out.println("Status Code: " + response.statusCode());
             //System.out.println("Response Body: " + responseBody);
-        } catch (IOException | InterruptedException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return jsonData;
@@ -361,10 +380,10 @@ public class library {
 
         JLabel Timer = new JLabel("时  间:");
         Timer.setFont(new Font("宋体", Font.BOLD, 14));
-        JComboBox<Integer> comboBoxHour = new JComboBox<>();
 
+        JComboBox<String> comboBoxHour = new JComboBox<>();
         for (int i = 0; i <= 23; i++) {
-            comboBoxHour.addItem(i);
+            comboBoxHour.addItem(String.format("%02d", i));//格式化占位符，表示数字至少占两位，如果不足两位则用0填充
         }
 
         comboBoxHour.setBackground(Color.WHITE); // 设置背景色为白色
@@ -376,9 +395,9 @@ public class library {
         JLabel colon = new JLabel(":");
         colon.setFont(new Font("微软雅黑", Font.BOLD, 10));
 
-        JComboBox<Integer> comboBoxMinute = new JComboBox<>();
+        JComboBox<String> comboBoxMinute = new JComboBox<>();
         for (int i = 0; i <= 59; i++) {
-            comboBoxMinute.addItem(i);
+            comboBoxMinute.addItem(String.format("%02d", i));
         }
 
         comboBoxMinute.setBackground(Color.WHITE); // 设置背景色为白色
@@ -390,9 +409,9 @@ public class library {
         JLabel colon1 = new JLabel(":");
         colon1.setFont(new Font("微软雅黑", Font.BOLD, 10));
 
-        JComboBox<Integer> comboBoxSecond = new JComboBox<>();
+        JComboBox<String> comboBoxSecond = new JComboBox<>();
         for (int i = 0; i <= 59; i++) {
-            comboBoxSecond.addItem(i);
+            comboBoxSecond.addItem(String.format("%02d", i));
         }
         comboBoxSecond.setBackground(Color.WHITE); // 设置背景色为白色
         comboBoxSecond.setForeground(Color.BLACK); // 设置前景色（文本颜色）为黑色
@@ -417,9 +436,9 @@ public class library {
                         String seatNumStr = textFieldSeatNum.getText().trim();
                         String seatNumStr1 = textFieldSeatNum1.getText().trim();
 
-                        int Hour = (int) comboBoxHour.getSelectedItem();
-                        int Minute = (int) comboBoxMinute.getSelectedItem();
-                        int Second = (int) comboBoxSecond.getSelectedItem();
+                        String Hour = (String) comboBoxHour.getSelectedItem();
+                        String Minute = (String) comboBoxMinute.getSelectedItem();
+                        String Second = (String) comboBoxSecond.getSelectedItem();
 
                         String DaySet= (String) comboBoxDaySet.getSelectedItem();
                         String Day= getNo_Day(DaySet);
@@ -451,31 +470,9 @@ public class library {
                             return;
                         }
 
-                        if (Hour < 10 && Minute < 10 && Second < 10) {
-                            String Time = "0" + Hour + ":" + "0" + Minute + ":" + "0" + Second;
-                            saveConfig(cardNumber, labRoomId, seatNum, labRoomId1, seatNum1, Time, Day);  // 保存配置
-                        } else if (Hour < 10 && Minute < 10 && Second >= 10) {
-                            String Time = "0" + Hour + ":" + "0" + Minute + ":" + Second;
-                            saveConfig(cardNumber, labRoomId, seatNum, labRoomId1, seatNum1, Time, Day);  // 保存配置
-                        } else if (Hour < 10 && Minute >= 10 && Second < 10) {
-                            String Time = "0" + Hour + ":" + Minute + ":" + "0" + Second;
-                            saveConfig(cardNumber, labRoomId, seatNum, labRoomId1, seatNum1, Time, Day);  // 保存配置
-                        } else if (Hour >= 10 && Minute < 10 && Second < 10) {
-                            String Time = Hour + ":" + "0" + Minute + ":" + "0" + Second;
-                            saveConfig(cardNumber, labRoomId, seatNum, labRoomId1, seatNum1, Time, Day);  // 保存配置
-                        } else if (Hour < 10 && Minute >= 10 && Second >= 10) {
-                            String Time = "0" + Hour + ":" + Minute + ":" + Second;
-                            saveConfig(cardNumber, labRoomId, seatNum, labRoomId1, seatNum1, Time, Day);  // 保存配置
-                        } else if (Hour >= 10 && Minute < 10 && Second >= 10) {
-                            String Time = Hour + ":" + "0" + Minute + ":" + Second;
-                            saveConfig(cardNumber, labRoomId, seatNum, labRoomId1, seatNum1, Time, Day);  // 保存配置
-                        } else if (Hour >= 10 && Minute >= 10 && Second < 10) {
-                            String Time = Hour + ":" + Minute + ":" + "0" + Second;
-                            saveConfig(cardNumber, labRoomId, seatNum, labRoomId1, seatNum1, Time, Day);  // 保存配置
-                        } else if (Hour >= 10 && Minute >= 10 && Second >= 10) {
                             String Time = Hour + ":" + Minute + ":" + Second;
                             saveConfig(cardNumber, labRoomId, seatNum, labRoomId1, seatNum1, Time, Day);  // 保存配置
-                        }
+
                         JOptionPane.showMessageDialog(null, "保存配置成功！");
                         frame.dispose();
 
