@@ -78,7 +78,7 @@
 
 ### 1.5 更改高级电源设置
 
-![image-20250217222021776](README.assets/image-20250217222021776.png)
+![image-20250217222021776](https://cdn.jsdelivr.net/gh/InfiniteGeek/Picture/windows/image-20250217222021776.png)
 
 ### 1.6 高级电源计划设置
 
