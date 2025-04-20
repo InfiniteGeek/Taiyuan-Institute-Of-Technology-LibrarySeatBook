@@ -10,7 +10,11 @@
 
 3.设置不睡眠不锁屏仅息屏【看《修改电源计划-不睡眠不锁屏仅息屏》】
 
+ 
 
+ 
+
+ 
 
 ## 如何抓取Token个人令牌
 
@@ -46,9 +50,11 @@
 
 ![image-20250420220427442](https://cdn.jsdelivr.net/gh/InfiniteGeek/Picture/windows/image-20250420220427442.png)
 
+ 
 
+ 
 
-
+ 
 
 ## 修改电源计划-不睡眠不锁屏仅息屏（为了防止睡眠睡死不执行预约命令）
 
@@ -130,11 +136,11 @@
 
 ![image-20250221001531890](https://cdn.jsdelivr.net/gh/InfiniteGeek/Picture/windows/image-20250221001531890.png)
 
+ 
 
+ 
 
-
-
-
+ 
 
 ## 提示：如果软件界面模糊，解决方法：
 
