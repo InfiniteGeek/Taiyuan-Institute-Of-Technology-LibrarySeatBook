@@ -14,9 +14,11 @@
 
 ## 密钥
 
-https://space.bilibili.com/1302624960
+ 密钥为B站实时粉丝数【github主页也有展示】
 
- 密钥为B站实时粉丝数
+<img src="https://stats.justsong.cn/api/bilibili/?id=1302624960&cn=true" style="box-shadow:none !important">
+
+
 
  
 
