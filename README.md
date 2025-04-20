@@ -88,7 +88,7 @@
 
 #### 1.6.2 将睡眠改为‘从不’，‘允许使用唤醒定时器’设置为‘启用’
 
-![image-20250217222415915](README.assets/image-20250217222415915.png)
+![image-20250217222415915](https://cdn.jsdelivr.net/gh/InfiniteGeek/Picture/windows/image-20250217222415915.png)
 
 #### 1.6.3 息屏设置，时间自行设置（建议设置5min）
 
@@ -122,7 +122,7 @@
 
 #### 2.3.1 取消勾选“在恢复时显示登陆屏幕”；“屏幕”保护程序设置为“无”
 
-![image-20250221000901067](README.assets/image-20250221000901067.png)
+![image-20250221000901067](https://cdn.jsdelivr.net/gh/InfiniteGeek/Picture/windows/image-20250221000901067.png)
 
 #### 2.3.2 确认保存
 
@@ -130,7 +130,7 @@
 
 ### 3.1 window+i，快捷打开设置
 
-![image-20250221001417738](README.assets/image-20250221001417738.png)
+![image-20250221001417738](https://cdn.jsdelivr.net/gh/InfiniteGeek/Picture/windows/image-20250221001417738.png)
 
 ### 3.2 登录选项设置，将“离开电脑要求重新登录”设置为“从不”
 
