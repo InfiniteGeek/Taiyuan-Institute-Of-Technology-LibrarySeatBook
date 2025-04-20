@@ -12,7 +12,11 @@
 
  
 
- 
+## 密钥
+
+https://space.bilibili.com/1302624960
+
+ 密钥为B站实时粉丝数
 
  
 
