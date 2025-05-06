@@ -60,8 +60,6 @@
 
  
 
- 
-
 ## 修改电源计划-不睡眠不锁屏仅息屏（为了防止睡眠睡死不执行预约命令）
 
 ## 1.不睡眠
@@ -144,10 +142,6 @@
 
  
 
- 
-
- 
-
 ## 提示：如果软件界面模糊，解决方法：
 
 右键exe-属性-兼容性-更改更高的DPI
@@ -155,3 +149,11 @@
 将“使用此设置修复此程序的缩放问题，而不是“设置"中的缩放问题”和“高DPI缩放替代 替代高DPI缩放行为(应用程序)”这两项打勾✔
 
 ![image-20250420221004785](https://cdn.jsdelivr.net/gh/InfiniteGeek/Picture/windows/image-20250420221004785.png)
+
+
+
+## 项目贡献者
+
+<a href="https://github.com/InfiniteGeek/Taiyuan-Institute-Of-Technology-LibrarySeatBook/graphs/contributors"><img src="https://contrib.rocks/image?repo=Fortunate-ziye/-library-reservation" />  <img src="https://contrib.rocks/image?repo=oopsunix/ghproxy" />
+</a>
+
