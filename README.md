@@ -20,13 +20,9 @@
 
 ## :key:密钥
 
- 密钥为B站实时粉丝数【github主页也有展示】
+` 密钥`为B站实时粉丝数
 
 <img src="https://stats.justsong.cn/api/bilibili/?id=1302624960&lang=zh-CN&theme=vue" style="box-shadow:none !important">
-
-
-
- 
 
 ## :id:如何抓取Token个人令牌
 
@@ -54,7 +50,7 @@
 
 3.3 登录电脑版微信并打开⼩程序⾯板，打开预约⼩程序即可，[无需点进‘图书馆预约’]。
 
-<img src="https://cdn.jsdelivr.net/gh/InfiniteGeek/Picture/windows/image-20250420220318281.png" alt="image-20250420220318281" style="zoom: 50%;" />
+<img src="https://cdn.jsdelivr.net/gh/InfiniteGeek/Picture/windows/image-20250420220318281.png" alt="image-20250420220318281" width="200" />
 
 3.4 查看Fiddler抓包情况，找到最后⼀次mipsevice.tit.edu.cn的host；先点击左侧的‘检查’ 🔍 按钮，随后
 设置上下窗⼝为‘原始’模式。在上⽅窗⼝显示‘openid’，则抓取正确。将‘openid’中的内容[不含引号]全部
