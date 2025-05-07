@@ -1,4 +1,6 @@
-# ![座位预约(小)](https://cdn.jsdelivr.net/gh/InfiniteGeek/Picture/windows/%E5%BA%A7%E4%BD%8D%E9%A2%84%E7%BA%A6(%E5%B0%8F).png)Taiyuan-Institute-Of-Technology-LibrarySeatBook(太原工业学院预约图书馆座位软件)
+<img src="README.assets/座位预约-1746596704512-11.png" width="128"/>
+
+# <img src="README.assets/座位预约-1746596704512-11.png" width="60"/>Taiyuan-Institute-Of-Technology-LibrarySeatBook(太原工业学院预约图书馆座位软件)
 
 ## :book:使用说明
 
