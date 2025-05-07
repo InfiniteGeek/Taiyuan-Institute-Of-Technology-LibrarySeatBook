@@ -1,6 +1,6 @@
 # Taiyuan-Institute-Of-Technology-LibrarySeatBook(太原工业学院预约图书馆座位软件)
 
-## 使用说明
+## :book:使用说明
 
 1.双击打开LibrarySeatBook.exe安装程序，安装后填写学号等信息【其中‘令牌’需要手动使用Fiddler抓取，看《如何抓取Token令牌》】
 
@@ -12,7 +12,7 @@
 
  
 
-## 密钥
+## :key:密钥
 
  密钥为B站实时粉丝数【github主页也有展示】
 
@@ -22,7 +22,7 @@
 
  
 
-## 如何抓取Token个人令牌
+## :id:如何抓取Token个人令牌
 
 1.下载Fiddler抓包软件并自解压
 
@@ -60,9 +60,9 @@
 
  
 
-## 修改电源计划-不睡眠不锁屏仅息屏（为了防止睡眠睡死不执行预约命令）
+## :pencil:修改电源计划-不睡眠不锁屏仅息屏（为了防止睡眠睡死不执行预约命令）
 
-## 1.不睡眠
+## :zzz:1.不睡眠
 
 ### 1.1 window+r，输入‘control’打开控制面板
 
@@ -110,7 +110,7 @@
 
 <img src="https://cdn.jsdelivr.net/gh/InfiniteGeek/Picture/windows/image-20250221002211379.png" alt="image-20250221002211379" style="zoom:50%;" />
 
-## 2.不锁屏（win10为例，win11类似）
+## 2.:unlock:不锁屏（win10为例，win11类似）
 
 ### 2.1 window+i，快捷打开系统设置
 
@@ -130,7 +130,7 @@
 
 #### 2.3.2 确认保存
 
-## 3.仅息屏（win10为例，win11类似）
+## :computer:3.仅息屏（win10为例，win11类似）
 
 ### 3.1 window+i，快捷打开设置
 
@@ -142,7 +142,7 @@
 
  
 
-## 提示：如果软件界面模糊，解决方法：
+## :bulb:提示：如果软件界面模糊，解决方法：
 
 右键exe-属性-兼容性-更改更高的DPI
 
@@ -152,7 +152,7 @@
 
 
 
-## 项目贡献者
+## :busts_in_silhouette:项目贡献者
 
 <a href="https://github.com/Fortunate-ziye/-library-reservation"> <img src="https://contrib.rocks/image?repo=Fortunate-ziye/-library-reservation" /></a> <a href="https://github.com/oopsunix/ghproxy"> <img src="https://contrib.rocks/image?repo=oopsunix/ghproxy" />
 </a>
