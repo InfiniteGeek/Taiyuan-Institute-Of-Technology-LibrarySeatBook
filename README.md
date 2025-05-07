@@ -3,8 +3,15 @@
     </div>
 
 
+# <img src="https://cdn.jsdelivr.net/gh/InfiniteGeek/Picture/windows/%E5%BA%A7%E4%BD%8D%E9%A2%84%E7%BA%A6.png" width="60"/>Taiyuan-Institute-Of-Technology-LibrarySeatBook(太原工业学院-自动化预约图书馆座位)
 
-# <img src="https://cdn.jsdelivr.net/gh/InfiniteGeek/Picture/windows/%E5%BA%A7%E4%BD%8D%E9%A2%84%E7%BA%A6.png" width="60"/>Taiyuan-Institute-Of-Technology-LibrarySeatBook(太原工业学院预约图书馆座位软件)
+## :open_file_folder:功能简介
+
+| :heavy_check_mark: 已具有的功能           | :x: 待开发的功能                       |
+| :---------------------------------------- | -------------------------------------- |
+| :heavy_check_mark: 每天预约开启时自动预约 | :x: 精确设置每周的周几预约座位         |
+| :heavy_check_mark: 预约前空闲时自动更新   | :x: 自动获取个人令牌，无需手动抓包     |
+| :heavy_check_mark: 断网重连后自动再次预约 | :x: 部署在云端，用户无需安装在本地使用 |
 
 ## :book:使用说明
 
