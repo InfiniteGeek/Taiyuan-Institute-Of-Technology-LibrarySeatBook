@@ -154,6 +154,6 @@
 
 ## 项目贡献者
 
-<a href="https://github.com/InfiniteGeek/Taiyuan-Institute-Of-Technology-LibrarySeatBook/graphs/contributors"><img src="https://contrib.rocks/image?repo=Fortunate-ziye/-library-reservation" />  <img src="https://contrib.rocks/image?repo=oopsunix/ghproxy" />
+<a href="https://github.com/Fortunate-ziye/-library-reservation"> <img src="https://contrib.rocks/image?repo=Fortunate-ziye/-library-reservation" /></a> <a href="https://github.com/oopsunix/ghproxy"> <img src="https://contrib.rocks/image?repo=oopsunix/ghproxy" />
 </a>
 
