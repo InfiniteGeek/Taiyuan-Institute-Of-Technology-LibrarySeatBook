@@ -1,6 +1,10 @@
-<img src="https://cdn.jsdelivr.net/gh/InfiniteGeek/Picture/windows/%E5%BA%A7%E4%BD%8D%E9%A2%84%E7%BA%A6.png?center=true" width="128" />
+<div align="center">
+    <img src="https://cdn.jsdelivr.net/gh/InfiniteGeek/Picture/windows/%E5%BA%A7%E4%BD%8D%E9%A2%84%E7%BA%A6.png" width="128" />
+    </div>
 
-# <img src="https://cdn.jsdelivr.net/gh/InfiniteGeek/Picture/windows/%E5%BA%A7%E4%BD%8D%E9%A2%84%E7%BA%A6.png" width="60" left=true/>Taiyuan-Institute-Of-Technology-LibrarySeatBook(太原工业学院预约图书馆座位软件)
+
+
+# <img src="https://cdn.jsdelivr.net/gh/InfiniteGeek/Picture/windows/%E5%BA%A7%E4%BD%8D%E9%A2%84%E7%BA%A6.png" width="60"/>Taiyuan-Institute-Of-Technology-LibrarySeatBook(太原工业学院预约图书馆座位软件)
 
 ## :book:使用说明
 
