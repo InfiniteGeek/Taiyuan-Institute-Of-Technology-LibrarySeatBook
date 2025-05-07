@@ -16,7 +16,7 @@
 
  密钥为B站实时粉丝数【github主页也有展示】
 
-<img src="https://stats.justsong.cn/api/bilibili/?id=1302624960&lang=zh-CN&theme=dark" style="box-shadow:none !important">
+<img src="https://stats.justsong.cn/api/bilibili/?id=1302624960&lang=zh-CN&theme=light" style="box-shadow:none !important">
 
 
 
