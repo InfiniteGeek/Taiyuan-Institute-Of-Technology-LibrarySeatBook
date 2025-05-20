@@ -2,7 +2,7 @@
     <sup><img src="https://cdn.jsdelivr.net/gh/InfiniteGeek/Picture/windows/%E5%BA%A7%E4%BD%8D%E9%A2%84%E7%BA%A6.png" width="128" ></sup>
     </div>
 
-# <img src="README.assets/0373281CD4AD9C441C312E62EA5_C566E8B9_6AAD4-1747744255665-6-1747746621983-21.png" style="zoom:5%;" /> 太原工业学院-自动化预约图书馆座位
+# <img src="https://cdn.jsdelivr.net/gh/InfiniteGeek/Picture/windows/0373281CD4AD9C441C312E62EA5_C566E8B9_6AAD4-1747744255665-6.png" style="zoom:5%;" /> 太原工业学院-自动化预约图书馆座位
 
 ## :open_file_folder:功能简介
 
