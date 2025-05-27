@@ -118,7 +118,7 @@
 
 <img src="https://cdn.jsdelivr.net/gh/InfiniteGeek/Picture/windows/image-20250221002211379.png" alt="image-20250221002211379" style="zoom:50%;" />
 
-## 2.:unlock:不锁屏（win10为例，win11类似）
+## 2. :unlock:不锁屏（win10为例，win11类似）
 
 ### 2.1 window+i，快捷打开系统设置
 
